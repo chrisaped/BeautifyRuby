@@ -38,6 +38,7 @@ class BeautifyRubyCommand(sublime_plugin.TextCommand):
       return
     self.save_viewport_state()
     beautified_buffer = self.pipe(self.cmd(), buffer_text)
+    self.check_for_newline_at_eof(beautified_buffer)
     fix_lines = beautified_buffer.replace(os.linesep,'\n')
     self.check_valid_output(fix_lines)
     self.view.replace(edit, buffer_region, fix_lines)
@@ -73,12 +74,10 @@ class BeautifyRubyCommand(sublime_plugin.TextCommand):
 
     return ruby_interpreter + " '" + ruby_script + "' " + ' '.join(args)
 
-  def finalize_output(self, text):
-    lines = text.splitlines()
-    finalized_output = "\n".join(lines)
+  def check_for_newline_at_eof(self, text):
     if self.view.settings().get("ensure_newline_at_eof_on_save") and not text.endswith("\n"):
       text += "\n"
-    return finalized_output
+    return text
 
   def config_params(self):
     def create_parameter(name):
